@@ -4,7 +4,7 @@
   </a>
   <span>+<span>
   <a href="https://bidjs.com/">
-  <img alt="BidJS" src="https://media.bidjs.com/image/upload/f_auto,q_auto/v1629452347/bidjs-com/logo.png" width="60">
+  <img alt="BidJS" src="https://media.bidjs.com/image/upload/f_auto,q_auto/v1629452347/bidjs-com/logo.png" width="100">
   </a>
 </p>
 <h1 align="center">
