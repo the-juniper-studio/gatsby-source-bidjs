@@ -1,0 +1,25 @@
+{
+  "name": "gatsby-source-bidjs",
+  "version": "0.0.1",
+  "description": "Fetch live and archived auctions from bidJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"No build script setup\""
+  },
+  "dependencies": {
+    "chalk": "^4.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.6.2"
+  },
+  "keywords": [
+    "bidJS",
+    "bidlogix",
+    "gatsby",
+    "gatsby-plugin"
+  ],
+  "author": "The Juniper Studio <hello@thejuniperstudio.com>",
+  "license": "0BSD",
+  "bugs": "https://github.com/the-juniper-studio/gatsby-source-bidjs/issues"
+}
