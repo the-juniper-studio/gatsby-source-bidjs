@@ -35,11 +35,14 @@ Environment variables allow you to safely store sensitive information about your
 .env.production
 
 Then, add the variables on each file to match your BidJS Config information (provided by BidJS)
+
+```shell
 GATSBY_BIDJS_CLIENT_ID // e.g. demonstration
 GATSBY_BIDJS_REGION // e.g. eu-west-2
 GATSBY_BIDJS_SERVER // e.g. hove
 GATSBY_BIDJS_VERSION // e.g. 5
 GATSBY_COMPANY_URL // e.g. https://www.thejuniperstudio.com (do not include trailing slash)
+```
 
 ## Configure the plugin
 
