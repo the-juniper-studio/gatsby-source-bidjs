@@ -1,4 +1,4 @@
-const { addSlashIfNotPresent } = require('./src/utils/StringUtils')
+const { addSlashIfNotPresent } = require('./src/utils/stringUtils')
 const path = require('path')
 const chalk = require('chalk')
 
