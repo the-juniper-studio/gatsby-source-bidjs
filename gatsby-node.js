@@ -5,6 +5,7 @@ const chalk = require('chalk')
 console.log(chalk.hex('#fff')('╔═══════╗'))
 console.log(chalk.hex('#fff').bold('║ Bid') + chalk.hex('#22C997').bold('JS') + chalk.hex('#fff').bold(' ║'))
 console.log(chalk.hex('#fff')('╚═══════╝'))
+
 console.time('Create BidJS GraphQL')
 
 exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, createNodeId, store, cache, reporter }, pluginOptions) => {
@@ -84,23 +85,78 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
     }
   })
   const bidjsAuctionsArchived = await auctionsArchivedResponse.json()
-  bidjsAuctionsArchived.basicAuctionBidJSModelList.forEach((archivedAuction) => {
-    const last_publication_date = new Date(archivedAuction.auctionEndTime)
-    const nodeData = Object.assign({
-      ...archivedAuction,
-      children: [],
-      id: createNodeId(archivedAuction.auctionId),
-      internal: {
-        type: `BidJSAuctionsArchived`,
-        contentDigest: createContentDigest(archivedAuction)
-      },
-      last_publication_date: last_publication_date?.toISOString(),
-      parent: null,
-      path: `/auction/#!/auctions/${archivedAuction.auctionUuid}`,
-      url: `${companyUrl}/auction/#!/auctions/${archivedAuction.auctionUuid}`
+  if (bidjsAuctionsArchived?.basicAuctionBidJSModelList?.length > 0) {
+    bidjsAuctionsArchived.basicAuctionBidJSModelList.forEach((archivedAuction) => {
+      const last_publication_date = new Date(archivedAuction.auctionEndTime)
+      const nodeData = Object.assign({
+        ...archivedAuction,
+        children: [],
+        id: createNodeId(archivedAuction.auctionId),
+        internal: {
+          type: `BidJSAuctionsArchived`,
+          contentDigest: createContentDigest(archivedAuction)
+        },
+        last_publication_date: last_publication_date?.toISOString(),
+        parent: null,
+        path: `/auction/#!/auctions/${archivedAuction.auctionUuid}`,
+        url: `${companyUrl}/auction/#!/auctions/${archivedAuction.auctionUuid}`
+      })
+      createNode(nodeData)
     })
-    createNode(nodeData)
+  } else {
+    console.warn('No BidJS Archived Auctions Found')
+  }
+
+  // Fetch Marketplace Data
+  const marketplaceResponse = await fetch(`https://${pluginOptions.server}.${pluginOptions.region}.bidjs.com/auction-007/api/v3/marketplace`, {
+    headers: {
+      'x-forwarded-client-id': pluginOptions.clientId
+    }
   })
+  const marketplaceData = await marketplaceResponse.json()
+  const salesData = marketplaceData?.marketplaceDetails?.sellingInformation?.sales || {}
+  const salesStatusesData = marketplaceData?.marketplaceDetails?.sellingInformation?.salesStatuses || {}
+  const purchaseTypesdata = marketplaceData?.marketplaceDetails?.sellingInformation?.purchaseTypes || {}
+  // Iterate over marketplace listings
+  if (marketplaceData?.marketplaceDetails?.information?.listings && Object.keys(marketplaceData.marketplaceDetails.information.listings).length > 0) {
+    Object.values(marketplaceData.marketplaceDetails.information.listings).forEach((listing) => {
+      const salesInfo = salesData[listing.uuid] || {} // Default to empty object if no sales data
+      const salesStatusInfo = salesStatusesData[listing.uuid] || {} // Default to empty object if no sales data
+      const firstImage = listing.images && listing.images.length > 0 ? `https://${pluginOptions.server}.${pluginOptions.region}.bidjs.com/attachment/${listing.images[0]}` : null
+      const purchaseType = purchaseTypesdata[salesInfo.purchaseTypeId] || 'Unknown'
+
+      const nodeData = {
+        ...listing,
+        ...salesInfo,
+        ...salesStatusInfo,
+        id: createNodeId(listing.uuid),
+        internal: {
+          type: `BidJsMarketplace`,
+          contentDigest: createContentDigest(listing)
+        },
+        parent: null,
+        title: listing.title,
+        description: listing.summary || '',
+        price: salesInfo.buyNowValue || 'N/A', // Example; replace with relevant pricing field
+        image: firstImage,
+        bidJSPath: `/auction/#!/marketplace/items/${listing.uuid}`,
+        path: (safePath = listing.title
+          ?.toLowerCase()
+          ?.replace(/[^a-z0-9\s-]/g, '')
+          ?.replace(/\s+/g, '-')
+          .replace(/-+/g, '-')),
+        auctionUuid: listing.auctionUuid,
+        location: listing.address?.address || 'Unknown',
+        category: listing.categoryUuid || 'Uncategorized',
+        lotNumber: listing.lotNumber || '',
+        purchaseType
+      }
+
+      createNode(nodeData)
+    })
+  } else {
+    console.warn('No BidJS Marketplace Items Found')
+  }
 }
 
 console.timeEnd('Create BidJS GraphQL')
