@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0
+## 1.0.1
 
 - BREAKING CHANGE: Updated the API to include Marketplace items under BidJsMarketplace.
 - Sale Details included in each item, more data will become available in future minor releases.
