@@ -117,13 +117,28 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
   const salesData = marketplaceData?.marketplaceDetails?.sellingInformation?.sales || {}
   const salesStatusesData = marketplaceData?.marketplaceDetails?.sellingInformation?.salesStatuses || {}
   const purchaseTypesdata = marketplaceData?.marketplaceDetails?.sellingInformation?.purchaseTypes || {}
+
   // Iterate over marketplace listings
   if (marketplaceData?.marketplaceDetails?.information?.listings && Object.keys(marketplaceData.marketplaceDetails.information.listings).length > 0) {
     Object.values(marketplaceData.marketplaceDetails.information.listings).forEach((listing) => {
       const salesInfo = salesData[listing.uuid] || {} // Default to empty object if no sales data
       const salesStatusInfo = salesStatusesData[listing.uuid] || {} // Default to empty object if no sales data
-      const firstImage = listing.images && listing.images.length > 0 ? `https://${pluginOptions.server}.${pluginOptions.region}.bidjs.com/attachment/${listing.images[0]}` : null
       const purchaseType = purchaseTypesdata[salesInfo.purchaseTypeId] || 'Unknown'
+
+      // Construct full URLs for images
+      const images = listing.images
+        ?.map((imageUuid) => {
+          const attachment = marketplaceData.marketplaceDetails.attachments[imageUuid]
+          return attachment
+            ? {
+                url: `${attachment.basePath}${attachment.versionAndPublicId}`,
+                alt: attachment.label // Alt text fallback
+              }
+            : null
+        })
+        .filter(Boolean)
+
+      const firstImage = images && images.length > 0 ? images[0] : null
 
       const nodeData = {
         ...listing,
@@ -138,7 +153,8 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
         title: listing.title,
         description: listing.summary || '',
         price: salesInfo.buyNowValue || 'N/A', // Example; replace with relevant pricing field
-        image: firstImage,
+        firstImage,
+        images,
         bidJSPath: `/auction/#!/marketplace/items/${listing.uuid}`,
         path: (safePath = listing.title
           ?.toLowerCase()
@@ -151,11 +167,38 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
         lotNumber: listing.lotNumber || '',
         purchaseType
       }
-
       createNode(nodeData)
     })
   } else {
-    console.warn('No BidJS Marketplace Items Found')
+    console.warn('No BidJS Marketplace Items Found - CREATING A NODE')
+    const nodeData = {
+      id: createNodeId('empty-bidjs-auction'),
+      parent: null,
+      children: [],
+      internal: {
+        type: `BidJsMarketplace`,
+        contentDigest: createContentDigest({ empty: true })
+      },
+      title: null,
+      description: null,
+      summary: null,
+      auctionUuid: null,
+      firstImage: {
+        alt: null,
+        url: null
+      },
+      images: [
+        {
+          alt: null,
+          url: null
+        }
+      ],
+      path: null,
+      featured: false,
+      uuid: null
+    }
+    console.log(nodeData)
+    createNode(nodeData)
   }
 }
 
