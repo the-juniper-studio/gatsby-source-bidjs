@@ -138,6 +138,19 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
         })
         .filter(Boolean)
 
+      const documents = listing.documents
+        ?.map((documentUuid) => {
+          const attachment = marketplaceData.marketplaceDetails.attachments[documentUuid]
+          return attachment
+            ? {
+                url: `${attachment.basePath}${attachment.versionAndPublicId}`,
+                label: attachment.label,
+                uuid: attachment.uuid
+              }
+            : null
+        })
+        .filter(Boolean)
+
       const firstImage = images && images.length > 0 ? images[0] : null
 
       const nodeData = {
@@ -152,9 +165,10 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
         parent: null,
         title: listing.title,
         description: listing.summary || '',
-        price: salesInfo.buyNowValue || 'N/A', // Example; replace with relevant pricing field
+        price: salesInfo.buyNowValue || 0, // Example; replace with relevant pricing field
         firstImage,
         images,
+        documents,
         bidJSPath: `/auction/#!/marketplace/items/${listing.uuid}`,
         path: (safePath = listing.title
           ?.toLowerCase()
