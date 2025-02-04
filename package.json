@@ -1,6 +1,6 @@
 {
   "name": "gatsby-source-bidjs",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Fetch live and archived auctions from bidJS",
   "main": "index.js",
   "scripts": {

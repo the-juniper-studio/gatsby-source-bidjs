@@ -164,7 +164,7 @@ exports.sourceNodes = async ({ actions: { createNode }, createContentDigest, cre
         },
         parent: null,
         title: listing.title,
-        description: listing.summary || '',
+        description: listing.descripton || '',
         price: salesInfo.buyNowValue || 0, // Example; replace with relevant pricing field
         firstImage,
         images,
